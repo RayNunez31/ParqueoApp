@@ -2,10 +2,10 @@ from onvif import ONVIFCamera
 import time
 
 # Camera connection details
-camera_ip = '10.0.0.6'  # Replace with your camera's IP address
-camera_port = 8000  # ONVIF port (default is 80, but check your camera's settings)
-username = 'admin'  # Replace with your camera username
-password = 'parqueoApp'  # Replace with your camera password
+camera_ip = '10.0.0.6'
+camera_port = 8000  # ONVIF port (default is 80=
+username = 'admin' 
+password = 'parqueoApp'  
 
 # Initialize the ONVIF camera
 camera = ONVIFCamera(camera_ip, camera_port, username, password)
@@ -16,7 +16,7 @@ media_service = camera.create_media_service()
 
 # Get the first profile token
 profiles = media_service.GetProfiles()
-profile_token = profiles[0].token  # Use the first profile
+profile_token = profiles[0].token  
 print(f"Using profile token: {profile_token}")
 
 # Function to move the camera continuously
