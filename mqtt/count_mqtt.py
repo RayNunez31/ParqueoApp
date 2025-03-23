@@ -59,17 +59,16 @@ def connect_mqtt(client_id):
 
 def publish(client, parking_id):
 	base_topic= "parqueoApp"
-	while True:
-		datos = Datos(parking_id, detections)
-		payload = json.dumps(datos, default=str)
-		topic = f"{base_topic}/{parking_id}/disponibilidad"
-		result = client.publish(topic, payload)
-		status = result[0]
-		if status == 0:
-			print(f"Enviado {payload} a {topic}")
-		else:
-			print(f"Mensaje fallidos {topic}")
-		time.sleep(5)
+	datos = Datos(parking_id, detections)
+	payload = json.dumps(datos, default=str)
+	topic = f"{base_topic}/{parking_id}/disponibilidad"
+	result = client.publish(topic, payload)
+	status = result[0]
+	if status == 0:
+		print(f"Enviado {payload} a {topic}")
+	else:
+		print(f"Mensaje fallidos {topic}")
+	time.sleep(5)
 
 def run_publisher(parking_ids):
 	threads = []
@@ -84,6 +83,6 @@ def run_publisher(parking_ids):
 		t.join()
 
 if __name__ == '__main__':
-	parking_ids = [1,2]
+	parking_ids = [1]
 	run_publisher(parking_ids)
 
