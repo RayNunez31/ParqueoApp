@@ -1,0 +1,2042 @@
+{
+    "name": "Integration Telegram Bot",
+    "flow": [
+        {
+            "id": 1,
+            "module": "telegram:WatchUpdates",
+            "version": 1,
+            "parameters": {
+                "__IMTHOOK__": 329058
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 300
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTHOOK__": {
+                            "data": {
+                                "editable": "false"
+                            },
+                            "label": "ParqueApp_bot"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTHOOK__",
+                        "type": "hook:telegramapi",
+                        "label": "Webhook",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "openai-gpt-3:CreateCompletion",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 1394473
+            },
+            "mapper": {
+                "select": "chat",
+                "temperature": "1",
+                "top_p": "1",
+                "n_completions": "1",
+                "model": "gpt-3.5-turbo",
+                "max_tokens": "2048",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "{{1.channel_post.text}}"
+                    },
+                    {
+                        "role": "system",
+                        "content": "Eres un asistente de inteligencia artificial para la disponibilidad de estacionamientos en una universidad.\nTu tarea es identificar si el mensaje del usuario está relacionado con el estacionamiento y, si es así, proporcionar el nombre del parqueo mencionado en el mensaje.\nDebes responder exclusivamente en formato JSON con la siguiente estructura:\n\n\"el usuario esta preguntando por un parqueo\": \"Sí\" si el mensaje del usuario está relacionado con estacionamientos, \"No\" en caso contrario.\n\n\"nombre del parqueo\": Si el mensaje menciona un parqueo específico, devuelve su nombre; si no se menciona un nombre, deja este campo vacío."
+                    }
+                ],
+                "response_format": "text"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 300
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "Gpt_connection",
+                            "data": {
+                                "scoped": "true",
+                                "connection": "openai-gpt-3"
+                            }
+                        }
+                    },
+                    "expect": {
+                        "select": {
+                            "label": "Create a Chat Completion (GPT and o1 models)"
+                        },
+                        "logit_bias": {
+                            "mode": "chose"
+                        },
+                        "stop": {
+                            "mode": "chose"
+                        },
+                        "additionalParameters": {
+                            "mode": "chose"
+                        },
+                        "model": {
+                            "mode": "chose",
+                            "label": "gpt-3.5-turbo"
+                        },
+                        "messages": {
+                            "mode": "chose",
+                            "items": [
+                                {
+                                    "role": {
+                                        "mode": "chose",
+                                        "label": "User"
+                                    }
+                                },
+                                {
+                                    "role": {
+                                        "mode": "chose",
+                                        "label": "Developer / System"
+                                    }
+                                }
+                            ]
+                        },
+                        "response_format": {
+                            "mode": "chose",
+                            "label": "Text"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:openai-gpt-3",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "select",
+                        "type": "select",
+                        "label": "Select Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "chat",
+                                "prompt"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "temperature",
+                        "type": "number",
+                        "label": "Temperature",
+                        "validate": {
+                            "max": 2,
+                            "min": 0
+                        }
+                    },
+                    {
+                        "name": "top_p",
+                        "type": "number",
+                        "label": "Top P",
+                        "validate": {
+                            "max": 1,
+                            "min": 0
+                        }
+                    },
+                    {
+                        "name": "n_completions",
+                        "type": "number",
+                        "label": "Number"
+                    },
+                    {
+                        "name": "frequency_penalty",
+                        "type": "number",
+                        "label": "Frequency Penalty",
+                        "validate": {
+                            "max": 2,
+                            "min": -2
+                        }
+                    },
+                    {
+                        "name": "presence_penalty",
+                        "type": "number",
+                        "label": "Presence Penalty",
+                        "validate": {
+                            "max": 2,
+                            "min": -2
+                        }
+                    },
+                    {
+                        "name": "logit_bias",
+                        "type": "array",
+                        "label": "Token Probability",
+                        "spec": {
+                            "spec": [
+                                {
+                                    "name": "token",
+                                    "type": "text",
+                                    "label": "Token ID",
+                                    "required": true
+                                },
+                                {
+                                    "name": "probability",
+                                    "type": "number",
+                                    "label": "Probability",
+                                    "required": true,
+                                    "validate": {
+                                        "max": 100,
+                                        "min": -100
+                                    }
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Token Probability",
+                            "name": "value"
+                        }
+                    },
+                    {
+                        "name": "seed",
+                        "type": "integer",
+                        "label": "Seed"
+                    },
+                    {
+                        "name": "stop",
+                        "type": "array",
+                        "label": "Stop Sequences",
+                        "validate": {
+                            "maxItems": 4
+                        },
+                        "spec": {
+                            "type": "text",
+                            "label": "Stop Sequence",
+                            "name": "value"
+                        }
+                    },
+                    {
+                        "name": "additionalParameters",
+                        "type": "array",
+                        "label": "Other Input Parameters",
+                        "spec": {
+                            "spec": [
+                                {
+                                    "name": "key",
+                                    "type": "text",
+                                    "label": "Parameter Name",
+                                    "required": true
+                                },
+                                {
+                                    "name": "type",
+                                    "type": "select",
+                                    "label": "Input Type",
+                                    "options": [
+                                        {
+                                            "label": "Text",
+                                            "value": "text",
+                                            "nested": [
+                                                {
+                                                    "name": "value",
+                                                    "type": "text",
+                                                    "label": "Parameter Value"
+                                                }
+                                            ],
+                                            "default": true
+                                        },
+                                        {
+                                            "label": "Number",
+                                            "value": "number",
+                                            "nested": [
+                                                {
+                                                    "name": "value",
+                                                    "type": "number",
+                                                    "label": "Parameter Value"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": "Boolean",
+                                            "value": "boolean",
+                                            "nested": [
+                                                {
+                                                    "name": "value",
+                                                    "type": "boolean",
+                                                    "label": "Parameter Value"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": "Date",
+                                            "value": "date",
+                                            "nested": [
+                                                {
+                                                    "name": "value",
+                                                    "type": "date",
+                                                    "label": "Parameter Value"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": "Any",
+                                            "value": "any",
+                                            "nested": [
+                                                {
+                                                    "name": "value",
+                                                    "type": "any",
+                                                    "label": "Parameter Value"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Input Parameter",
+                            "name": "value"
+                        }
+                    },
+                    {
+                        "name": "model",
+                        "type": "select",
+                        "label": "Model",
+                        "required": true
+                    },
+                    {
+                        "name": "max_tokens",
+                        "type": "uinteger",
+                        "label": "Max Completion Tokens"
+                    },
+                    {
+                        "name": "messages",
+                        "type": "array",
+                        "label": "Messages",
+                        "required": true,
+                        "spec": {
+                            "label": "Message",
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "role",
+                                    "type": "select",
+                                    "label": "Role",
+                                    "required": true,
+                                    "options": {
+                                        "store": [
+                                            {
+                                                "label": "User",
+                                                "value": "user",
+                                                "nested": [
+                                                    {
+                                                        "help": "Text content of the message on behalf of the selected __Role__.",
+                                                        "name": "content",
+                                                        "type": "text",
+                                                        "label": "Text Content"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "label": "Assistant",
+                                                "value": "assistant",
+                                                "nested": [
+                                                    {
+                                                        "help": "Text content of the message on behalf of the selected __Role__.",
+                                                        "name": "content",
+                                                        "type": "text",
+                                                        "label": "Text Content"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "label": "Developer / System",
+                                                "value": "system",
+                                                "nested": [
+                                                    {
+                                                        "help": "Text content of the message on behalf of the selected __Role__.",
+                                                        "name": "content",
+                                                        "type": "text",
+                                                        "label": "Text Content"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "name": "value"
+                        }
+                    },
+                    {
+                        "name": "response_format",
+                        "type": "select",
+                        "label": "Response Format",
+                        "validate": {
+                            "enum": [
+                                "text",
+                                "json_object"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "result",
+                        "type": "any",
+                        "label": "Result"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "object",
+                        "type": "text",
+                        "label": "Object"
+                    },
+                    {
+                        "name": "created",
+                        "type": "date",
+                        "label": "Created"
+                    },
+                    {
+                        "name": "model",
+                        "type": "text",
+                        "label": "Model"
+                    },
+                    {
+                        "name": "choices",
+                        "spec": {
+                            "spec": [
+                                {
+                                    "name": "text",
+                                    "type": "text",
+                                    "label": "Text"
+                                },
+                                {
+                                    "name": "index",
+                                    "type": "number",
+                                    "label": "Index"
+                                },
+                                {
+                                    "name": "logprobs",
+                                    "type": "text",
+                                    "label": "Log Probs"
+                                },
+                                {
+                                    "name": "finish_reason",
+                                    "type": "text",
+                                    "label": "Finish Reason"
+                                },
+                                {
+                                    "name": "message",
+                                    "spec": [
+                                        {
+                                            "name": "role",
+                                            "type": "text",
+                                            "label": "Role"
+                                        },
+                                        {
+                                            "name": "content",
+                                            "type": "text",
+                                            "label": "Content"
+                                        },
+                                        {
+                                            "name": "refusal",
+                                            "type": "text",
+                                            "label": "Refusal"
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "label": "Message"
+                                }
+                            ],
+                            "type": "collection"
+                        },
+                        "type": "array",
+                        "label": "Choices"
+                    },
+                    {
+                        "name": "usage",
+                        "spec": [
+                            {
+                                "name": "prompt_tokens",
+                                "type": "number",
+                                "label": "Prompt Tokens"
+                            },
+                            {
+                                "name": "completion_tokens",
+                                "type": "text",
+                                "label": "Completion Tokens"
+                            },
+                            {
+                                "name": "total_tokens",
+                                "type": "number",
+                                "label": "Total Tokens"
+                            },
+                            {
+                                "name": "prompt_tokens_details",
+                                "spec": [
+                                    {
+                                        "name": "cached_tokens",
+                                        "type": "uinteger",
+                                        "label": "Cached Tokens"
+                                    },
+                                    {
+                                        "name": "text_tokens",
+                                        "type": "uinteger",
+                                        "label": "Text Tokens"
+                                    },
+                                    {
+                                        "name": "image_tokens",
+                                        "type": "uinteger",
+                                        "label": "Image Tokens"
+                                    },
+                                    {
+                                        "name": "audio_tokens",
+                                        "type": "uinteger",
+                                        "label": "Audio Tokens"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Prompt Tokens Details"
+                            },
+                            {
+                                "name": "completion_tokens_details",
+                                "spec": [
+                                    {
+                                        "name": "reasoning_tokens",
+                                        "type": "uinteger",
+                                        "label": "Reasoning Tokens"
+                                    },
+                                    {
+                                        "name": "text_tokens",
+                                        "type": "uinteger",
+                                        "label": "Text Tokens"
+                                    },
+                                    {
+                                        "name": "audio_tokens",
+                                        "type": "uinteger",
+                                        "label": "Audio Tokens"
+                                    },
+                                    {
+                                        "name": "accepted_prediction_tokens",
+                                        "type": "uinteger",
+                                        "label": "Accepted Prediction Tokens"
+                                    },
+                                    {
+                                        "name": "rejected_prediction_tokens",
+                                        "type": "uinteger",
+                                        "label": "Rejected Prediction Tokens"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Completion Tokens Details"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Usage"
+                    },
+                    {
+                        "name": "service_tier",
+                        "type": "text",
+                        "label": "Service Tier"
+                    },
+                    {
+                        "name": "system_fingerprint",
+                        "type": "text",
+                        "label": "System Fingerprint"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 18,
+            "module": "json:ParseJSON",
+            "version": 1,
+            "parameters": {
+                "type": 70489
+            },
+            "mapper": {
+                "json": "{{6.choices[].message.content}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 300
+                },
+                "restore": {
+                    "parameters": {
+                        "type": {
+                            "label": "GPT RESPONSE DATA STRUCTURE"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "type",
+                        "type": "udt",
+                        "label": "Data structure"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "json",
+                        "type": "text",
+                        "label": "JSON string",
+                        "required": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "el usuario esta preguntando por un parqueo",
+                        "label": null,
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "nombre del parqueo",
+                        "label": null,
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    }
+                ]
+            }
+        },
+        {
+            "id": 19,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 300
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 22,
+                            "module": "builtin:BasicRouter",
+                            "version": 1,
+                            "filter": {
+                                "name": "Relacionado",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{18.`el usuario esta preguntando por un parqueo`}}",
+                                            "o": "text:equal",
+                                            "b": "Sí"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": null,
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 150
+                                }
+                            },
+                            "routes": [
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 23,
+                                            "module": "telegram:SendReplyMessage",
+                                            "version": 1,
+                                            "parameters": {
+                                                "__IMTCONN__": 1394414
+                                            },
+                                            "filter": {
+                                                "name": "Sin nombre",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{18.`nombre del parqueo`}}",
+                                                            "o": "notexist"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "chatId": "{{1.channel_post.chat.id}}",
+                                                "text": "Por favor, indícanos el nombre del parqueo sobre el que deseas información. Actualmente, contamos con varios estacionamientos en la universidad.",
+                                                "messageThreadId": "",
+                                                "parseMode": "",
+                                                "replyToMessageId": "",
+                                                "replyMarkupAssembleType": "reply_markup_enter",
+                                                "replyMarkup": ""
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 1500,
+                                                    "y": 0
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "__IMTCONN__": {
+                                                            "label": "ParqueApp_bot_connection",
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "telegram"
+                                                            }
+                                                        }
+                                                    },
+                                                    "expect": {
+                                                        "parseMode": {
+                                                            "label": "Empty"
+                                                        },
+                                                        "disableNotification": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "replyMarkupAssembleType": {
+                                                            "label": "Enter the Reply Markup"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "__IMTCONN__",
+                                                        "type": "account:telegram",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "chatId",
+                                                        "type": "text",
+                                                        "label": "Chat ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "text",
+                                                        "type": "text",
+                                                        "label": "Text",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "messageThreadId",
+                                                        "type": "number",
+                                                        "label": "Message Thread ID"
+                                                    },
+                                                    {
+                                                        "name": "parseMode",
+                                                        "type": "select",
+                                                        "label": "Parse Mode",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "Markdown",
+                                                                "HTML"
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "disableNotification",
+                                                        "type": "boolean",
+                                                        "label": "Disable Notifications"
+                                                    },
+                                                    {
+                                                        "name": "disableWebPagePreview",
+                                                        "type": "boolean",
+                                                        "label": "Disable Link Previews"
+                                                    },
+                                                    {
+                                                        "name": "replyToMessageId",
+                                                        "type": "number",
+                                                        "label": "Original Message ID"
+                                                    },
+                                                    {
+                                                        "name": "replyMarkupAssembleType",
+                                                        "type": "select",
+                                                        "label": "Enter/Assemble the Reply Markup Field",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "reply_markup_enter",
+                                                                "reply_markup_assemble"
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "replyMarkup",
+                                                        "type": "text",
+                                                        "label": "Reply Markup"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 24,
+                                            "module": "postgres:SelectFromTable",
+                                            "version": 2,
+                                            "parameters": {
+                                                "account": 2362812,
+                                                "continueWhenNoRes": true,
+                                                "isToManageDataInSharedTransaction": true,
+                                                "table": "\"public\".\"lectura\""
+                                            },
+                                            "filter": {
+                                                "name": "Con nombre",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{18.`nombre del parqueo`}}",
+                                                            "o": "exist"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "where": [
+                                                    [
+                                                        {
+                                                            "a": "nombre_parqueo",
+                                                            "o": "equal",
+                                                            "b": "{{18.`nombre del parqueo`}}"
+                                                        }
+                                                    ]
+                                                ],
+                                                "sort": [
+                                                    {
+                                                        "column": "hora",
+                                                        "order": "asc"
+                                                    }
+                                                ],
+                                                "limit": ""
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 1500,
+                                                    "y": 300
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "account": {
+                                                            "label": "ParqueoApp Database",
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "postgres"
+                                                            }
+                                                        },
+                                                        "table": {
+                                                            "label": "public.lectura"
+                                                        }
+                                                    },
+                                                    "expect": {
+                                                        "sort": {
+                                                            "items": [
+                                                                {
+                                                                    "column": {
+                                                                        "mode": "chose",
+                                                                        "label": "hora"
+                                                                    },
+                                                                    "order": {
+                                                                        "mode": "chose",
+                                                                        "label": "Ascending"
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "account",
+                                                        "type": "account:postgres",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "continueWhenNoRes",
+                                                        "type": "boolean",
+                                                        "label": "Continue the execution of the route even if the module returns no rows",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "isToManageDataInSharedTransaction",
+                                                        "type": "boolean",
+                                                        "label": "Manage data within the shared transaction",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "table",
+                                                        "type": "select",
+                                                        "label": "Table",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "where",
+                                                        "type": "filter",
+                                                        "label": "Filter",
+                                                        "options": {
+                                                            "store": [
+                                                                {
+                                                                    "label": "parqueo_id",
+                                                                    "value": "parqueo_id"
+                                                                },
+                                                                {
+                                                                    "label": "disponibilidad_total",
+                                                                    "value": "disponibilidad_total"
+                                                                },
+                                                                {
+                                                                    "label": "nombre",
+                                                                    "value": "nombre"
+                                                                },
+                                                                {
+                                                                    "label": "ultima_actualizacion",
+                                                                    "value": "ultima_actualizacion"
+                                                                },
+                                                                {
+                                                                    "label": "descripcion",
+                                                                    "value": "descripcion"
+                                                                }
+                                                            ],
+                                                            "operators": [
+                                                                {
+                                                                    "label": "Basic",
+                                                                    "options": [
+                                                                        {
+                                                                            "value": "exist",
+                                                                            "label": "Is not null"
+                                                                        },
+                                                                        {
+                                                                            "value": "notexist",
+                                                                            "label": "Is null"
+                                                                        },
+                                                                        {
+                                                                            "value": "equal",
+                                                                            "label": "Equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "notequal",
+                                                                            "label": "Not equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "greater",
+                                                                            "label": "Greater than"
+                                                                        },
+                                                                        {
+                                                                            "value": "greaterorequal",
+                                                                            "label": "Greater than or equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "less",
+                                                                            "label": "Less than"
+                                                                        },
+                                                                        {
+                                                                            "value": "lessorequal",
+                                                                            "label": "Less than or equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "contain",
+                                                                            "label": "Contains"
+                                                                        },
+                                                                        {
+                                                                            "value": "notcontain",
+                                                                            "label": "Does not contain"
+                                                                        },
+                                                                        {
+                                                                            "value": "startwith",
+                                                                            "label": "Starts with"
+                                                                        },
+                                                                        {
+                                                                            "value": "notstartwith",
+                                                                            "label": "Does not start with"
+                                                                        },
+                                                                        {
+                                                                            "value": "endwith",
+                                                                            "label": "Ends with"
+                                                                        },
+                                                                        {
+                                                                            "value": "notendwith",
+                                                                            "label": "Does not end with"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "sort",
+                                                        "type": "array",
+                                                        "label": "Sort",
+                                                        "spec": [
+                                                            {
+                                                                "name": "column",
+                                                                "type": "select",
+                                                                "required": true,
+                                                                "label": "Column",
+                                                                "options": [],
+                                                                "dynamic": true
+                                                            },
+                                                            {
+                                                                "name": "order",
+                                                                "type": "select",
+                                                                "required": true,
+                                                                "label": "Order",
+                                                                "options": [
+                                                                    {
+                                                                        "label": "Ascending",
+                                                                        "value": "asc"
+                                                                    },
+                                                                    {
+                                                                        "label": "Descending",
+                                                                        "value": "desc"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "name": "limit",
+                                                        "type": "uinteger",
+                                                        "label": "Limit"
+                                                    },
+                                                    {
+                                                        "name": "where",
+                                                        "type": "filter",
+                                                        "label": "Filter",
+                                                        "options": {
+                                                            "store": [
+                                                                {
+                                                                    "label": "id",
+                                                                    "value": "id"
+                                                                },
+                                                                {
+                                                                    "label": "parqueo_id",
+                                                                    "value": "parqueo_id"
+                                                                },
+                                                                {
+                                                                    "label": "parqueos_ocupados",
+                                                                    "value": "parqueos_ocupados"
+                                                                },
+                                                                {
+                                                                    "label": "parqueos_disponibles",
+                                                                    "value": "parqueos_disponibles"
+                                                                },
+                                                                {
+                                                                    "label": "hora",
+                                                                    "value": "hora"
+                                                                },
+                                                                {
+                                                                    "label": "nombre_parqueo",
+                                                                    "value": "nombre_parqueo"
+                                                                }
+                                                            ],
+                                                            "operators": [
+                                                                {
+                                                                    "label": "Basic",
+                                                                    "options": [
+                                                                        {
+                                                                            "value": "exist",
+                                                                            "label": "Is not null"
+                                                                        },
+                                                                        {
+                                                                            "value": "notexist",
+                                                                            "label": "Is null"
+                                                                        },
+                                                                        {
+                                                                            "value": "equal",
+                                                                            "label": "Equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "notequal",
+                                                                            "label": "Not equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "greater",
+                                                                            "label": "Greater than"
+                                                                        },
+                                                                        {
+                                                                            "value": "greaterorequal",
+                                                                            "label": "Greater than or equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "less",
+                                                                            "label": "Less than"
+                                                                        },
+                                                                        {
+                                                                            "value": "lessorequal",
+                                                                            "label": "Less than or equal to"
+                                                                        },
+                                                                        {
+                                                                            "value": "contain",
+                                                                            "label": "Contains"
+                                                                        },
+                                                                        {
+                                                                            "value": "notcontain",
+                                                                            "label": "Does not contain"
+                                                                        },
+                                                                        {
+                                                                            "value": "startwith",
+                                                                            "label": "Starts with"
+                                                                        },
+                                                                        {
+                                                                            "value": "notstartwith",
+                                                                            "label": "Does not start with"
+                                                                        },
+                                                                        {
+                                                                            "value": "endwith",
+                                                                            "label": "Ends with"
+                                                                        },
+                                                                        {
+                                                                            "value": "notendwith",
+                                                                            "label": "Does not end with"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "sort",
+                                                        "type": "array",
+                                                        "label": "Sort",
+                                                        "spec": [
+                                                            {
+                                                                "name": "column",
+                                                                "type": "select",
+                                                                "required": true,
+                                                                "label": "Column",
+                                                                "options": [],
+                                                                "dynamic": true
+                                                            },
+                                                            {
+                                                                "name": "order",
+                                                                "type": "select",
+                                                                "required": true,
+                                                                "label": "Order",
+                                                                "options": [
+                                                                    {
+                                                                        "label": "Ascending",
+                                                                        "value": "asc"
+                                                                    },
+                                                                    {
+                                                                        "label": "Descending",
+                                                                        "value": "desc"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "name": "limit",
+                                                        "type": "uinteger",
+                                                        "label": "Limit"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "__IMTLENGTH__",
+                                                        "label": "Total number of bundles",
+                                                        "type": "uinteger"
+                                                    },
+                                                    {
+                                                        "name": "__IMTINDEX__",
+                                                        "label": "Bundle order position",
+                                                        "type": "uinteger"
+                                                    },
+                                                    {
+                                                        "name": "id",
+                                                        "label": "id",
+                                                        "type": "integer",
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "name": "parqueo_id",
+                                                        "label": "parqueo_id",
+                                                        "type": "integer",
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "name": "parqueos_ocupados",
+                                                        "label": "parqueos_ocupados",
+                                                        "type": "integer",
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "name": "parqueos_disponibles",
+                                                        "label": "parqueos_disponibles",
+                                                        "type": "integer",
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "name": "hora",
+                                                        "label": "hora",
+                                                        "type": "text",
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "name": "nombre_parqueo",
+                                                        "label": "nombre_parqueo",
+                                                        "type": "text",
+                                                        "required": false
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "id": 25,
+                                            "module": "json:TransformToJSON",
+                                            "version": 1,
+                                            "parameters": {
+                                                "space": ""
+                                            },
+                                            "mapper": {
+                                                "object": "{{24.nombre_parqueo}}{{24.parqueos_disponibles}}{{24.parqueos_ocupados}}{{24.hora}}"
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 1800,
+                                                    "y": 300
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "space": {
+                                                            "label": "Empty"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "space",
+                                                        "type": "select",
+                                                        "label": "Indentation",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "tab",
+                                                                "2",
+                                                                "4"
+                                                            ]
+                                                        }
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "object",
+                                                        "type": "any",
+                                                        "label": "Object"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "id": 26,
+                                            "module": "openai-gpt-3:CreateCompletion",
+                                            "version": 1,
+                                            "parameters": {
+                                                "__IMTCONN__": 1394473
+                                            },
+                                            "mapper": {
+                                                "select": "chat",
+                                                "temperature": "1",
+                                                "top_p": "1",
+                                                "n_completions": "1",
+                                                "model": "gpt-3.5-turbo",
+                                                "max_tokens": "2048",
+                                                "messages": [
+                                                    {
+                                                        "role": "user",
+                                                        "content": "{{25.json}}"
+                                                    },
+                                                    {
+                                                        "role": "system",
+                                                        "content": "Eres un asistente de inteligencia artificial encargado de proporcionar información sobre la disponibilidad de estacionamientos en una universidad.\nRecibirás un JSON con la siguiente información sobre un parqueo:\n\nnombre_parqueo: Nombre del parqueo.\n\nparqueos_ocupados: Cantidad de espacios ocupados.\n\nparqueos_disponibles: Cantidad de espacios disponibles.\n\nhora: Fecha y hora de la última actualización.\n\nTu tarea es interpretar estos datos y generar una respuesta clara para el usuario.\nReglas para la respuesta:\n\nSiempre responde en lenguaje natural.\n\nMuestra la disponibilidad del parqueo de manera clara.\n\nSi el parqueo está lleno (parqueos_disponibles == 0), informa al usuario.\n\nSi hay espacios disponibles, indícalo con la cantidad de espacios restantes.\n\nIncluye la hora de actualización de la información."
+                                                    }
+                                                ],
+                                                "response_format": "text"
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 300
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "__IMTCONN__": {
+                                                            "label": "Gpt_connection",
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "openai-gpt-3"
+                                                            }
+                                                        }
+                                                    },
+                                                    "expect": {
+                                                        "select": {
+                                                            "label": "Create a Chat Completion (GPT and o1 models)"
+                                                        },
+                                                        "logit_bias": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "stop": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "additionalParameters": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "model": {
+                                                            "mode": "chose",
+                                                            "label": "gpt-3.5-turbo"
+                                                        },
+                                                        "messages": {
+                                                            "mode": "chose",
+                                                            "items": [
+                                                                {
+                                                                    "role": {
+                                                                        "mode": "chose",
+                                                                        "label": "User"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "role": {
+                                                                        "mode": "chose",
+                                                                        "label": "Developer / System"
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        "response_format": {
+                                                            "mode": "chose",
+                                                            "label": "Text"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "__IMTCONN__",
+                                                        "type": "account:openai-gpt-3",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "select",
+                                                        "type": "select",
+                                                        "label": "Select Method",
+                                                        "required": true,
+                                                        "validate": {
+                                                            "enum": [
+                                                                "chat",
+                                                                "prompt"
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "temperature",
+                                                        "type": "number",
+                                                        "label": "Temperature",
+                                                        "validate": {
+                                                            "max": 2,
+                                                            "min": 0
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "top_p",
+                                                        "type": "number",
+                                                        "label": "Top P",
+                                                        "validate": {
+                                                            "max": 1,
+                                                            "min": 0
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "n_completions",
+                                                        "type": "number",
+                                                        "label": "Number"
+                                                    },
+                                                    {
+                                                        "name": "frequency_penalty",
+                                                        "type": "number",
+                                                        "label": "Frequency Penalty",
+                                                        "validate": {
+                                                            "max": 2,
+                                                            "min": -2
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "presence_penalty",
+                                                        "type": "number",
+                                                        "label": "Presence Penalty",
+                                                        "validate": {
+                                                            "max": 2,
+                                                            "min": -2
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "logit_bias",
+                                                        "type": "array",
+                                                        "label": "Token Probability",
+                                                        "spec": {
+                                                            "spec": [
+                                                                {
+                                                                    "name": "token",
+                                                                    "type": "text",
+                                                                    "label": "Token ID",
+                                                                    "required": true
+                                                                },
+                                                                {
+                                                                    "name": "probability",
+                                                                    "type": "number",
+                                                                    "label": "Probability",
+                                                                    "required": true,
+                                                                    "validate": {
+                                                                        "max": 100,
+                                                                        "min": -100
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "type": "collection",
+                                                            "label": "Token Probability",
+                                                            "name": "value"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "seed",
+                                                        "type": "integer",
+                                                        "label": "Seed"
+                                                    },
+                                                    {
+                                                        "name": "stop",
+                                                        "type": "array",
+                                                        "label": "Stop Sequences",
+                                                        "validate": {
+                                                            "maxItems": 4
+                                                        },
+                                                        "spec": {
+                                                            "type": "text",
+                                                            "label": "Stop Sequence",
+                                                            "name": "value"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "additionalParameters",
+                                                        "type": "array",
+                                                        "label": "Other Input Parameters",
+                                                        "spec": {
+                                                            "spec": [
+                                                                {
+                                                                    "name": "key",
+                                                                    "type": "text",
+                                                                    "label": "Parameter Name",
+                                                                    "required": true
+                                                                },
+                                                                {
+                                                                    "name": "type",
+                                                                    "type": "select",
+                                                                    "label": "Input Type",
+                                                                    "options": [
+                                                                        {
+                                                                            "label": "Text",
+                                                                            "value": "text",
+                                                                            "nested": [
+                                                                                {
+                                                                                    "name": "value",
+                                                                                    "type": "text",
+                                                                                    "label": "Parameter Value"
+                                                                                }
+                                                                            ],
+                                                                            "default": true
+                                                                        },
+                                                                        {
+                                                                            "label": "Number",
+                                                                            "value": "number",
+                                                                            "nested": [
+                                                                                {
+                                                                                    "name": "value",
+                                                                                    "type": "number",
+                                                                                    "label": "Parameter Value"
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "label": "Boolean",
+                                                                            "value": "boolean",
+                                                                            "nested": [
+                                                                                {
+                                                                                    "name": "value",
+                                                                                    "type": "boolean",
+                                                                                    "label": "Parameter Value"
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "label": "Date",
+                                                                            "value": "date",
+                                                                            "nested": [
+                                                                                {
+                                                                                    "name": "value",
+                                                                                    "type": "date",
+                                                                                    "label": "Parameter Value"
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "label": "Any",
+                                                                            "value": "any",
+                                                                            "nested": [
+                                                                                {
+                                                                                    "name": "value",
+                                                                                    "type": "any",
+                                                                                    "label": "Parameter Value"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            "type": "collection",
+                                                            "label": "Input Parameter",
+                                                            "name": "value"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "model",
+                                                        "type": "select",
+                                                        "label": "Model",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "max_tokens",
+                                                        "type": "uinteger",
+                                                        "label": "Max Completion Tokens"
+                                                    },
+                                                    {
+                                                        "name": "messages",
+                                                        "type": "array",
+                                                        "label": "Messages",
+                                                        "required": true,
+                                                        "spec": {
+                                                            "label": "Message",
+                                                            "type": "collection",
+                                                            "spec": [
+                                                                {
+                                                                    "name": "role",
+                                                                    "type": "select",
+                                                                    "label": "Role",
+                                                                    "required": true,
+                                                                    "options": {
+                                                                        "store": [
+                                                                            {
+                                                                                "label": "User",
+                                                                                "value": "user",
+                                                                                "nested": [
+                                                                                    {
+                                                                                        "help": "Text content of the message on behalf of the selected __Role__.",
+                                                                                        "name": "content",
+                                                                                        "type": "text",
+                                                                                        "label": "Text Content"
+                                                                                    }
+                                                                                ]
+                                                                            },
+                                                                            {
+                                                                                "label": "Assistant",
+                                                                                "value": "assistant",
+                                                                                "nested": [
+                                                                                    {
+                                                                                        "help": "Text content of the message on behalf of the selected __Role__.",
+                                                                                        "name": "content",
+                                                                                        "type": "text",
+                                                                                        "label": "Text Content"
+                                                                                    }
+                                                                                ]
+                                                                            },
+                                                                            {
+                                                                                "label": "Developer / System",
+                                                                                "value": "system",
+                                                                                "nested": [
+                                                                                    {
+                                                                                        "help": "Text content of the message on behalf of the selected __Role__.",
+                                                                                        "name": "content",
+                                                                                        "type": "text",
+                                                                                        "label": "Text Content"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "name": "value"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "response_format",
+                                                        "type": "select",
+                                                        "label": "Response Format",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "text",
+                                                                "json_object"
+                                                            ]
+                                                        }
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "result",
+                                                        "type": "any",
+                                                        "label": "Result"
+                                                    },
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "object",
+                                                        "type": "text",
+                                                        "label": "Object"
+                                                    },
+                                                    {
+                                                        "name": "created",
+                                                        "type": "date",
+                                                        "label": "Created"
+                                                    },
+                                                    {
+                                                        "name": "model",
+                                                        "type": "text",
+                                                        "label": "Model"
+                                                    },
+                                                    {
+                                                        "name": "choices",
+                                                        "spec": {
+                                                            "spec": [
+                                                                {
+                                                                    "name": "text",
+                                                                    "type": "text",
+                                                                    "label": "Text"
+                                                                },
+                                                                {
+                                                                    "name": "index",
+                                                                    "type": "number",
+                                                                    "label": "Index"
+                                                                },
+                                                                {
+                                                                    "name": "logprobs",
+                                                                    "type": "text",
+                                                                    "label": "Log Probs"
+                                                                },
+                                                                {
+                                                                    "name": "finish_reason",
+                                                                    "type": "text",
+                                                                    "label": "Finish Reason"
+                                                                },
+                                                                {
+                                                                    "name": "message",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "role",
+                                                                            "type": "text",
+                                                                            "label": "Role"
+                                                                        },
+                                                                        {
+                                                                            "name": "content",
+                                                                            "type": "text",
+                                                                            "label": "Content"
+                                                                        },
+                                                                        {
+                                                                            "name": "refusal",
+                                                                            "type": "text",
+                                                                            "label": "Refusal"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection",
+                                                                    "label": "Message"
+                                                                }
+                                                            ],
+                                                            "type": "collection"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Choices"
+                                                    },
+                                                    {
+                                                        "name": "usage",
+                                                        "spec": [
+                                                            {
+                                                                "name": "prompt_tokens",
+                                                                "type": "number",
+                                                                "label": "Prompt Tokens"
+                                                            },
+                                                            {
+                                                                "name": "completion_tokens",
+                                                                "type": "text",
+                                                                "label": "Completion Tokens"
+                                                            },
+                                                            {
+                                                                "name": "total_tokens",
+                                                                "type": "number",
+                                                                "label": "Total Tokens"
+                                                            },
+                                                            {
+                                                                "name": "prompt_tokens_details",
+                                                                "spec": [
+                                                                    {
+                                                                        "name": "cached_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Cached Tokens"
+                                                                    },
+                                                                    {
+                                                                        "name": "text_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Text Tokens"
+                                                                    },
+                                                                    {
+                                                                        "name": "image_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Image Tokens"
+                                                                    },
+                                                                    {
+                                                                        "name": "audio_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Audio Tokens"
+                                                                    }
+                                                                ],
+                                                                "type": "collection",
+                                                                "label": "Prompt Tokens Details"
+                                                            },
+                                                            {
+                                                                "name": "completion_tokens_details",
+                                                                "spec": [
+                                                                    {
+                                                                        "name": "reasoning_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Reasoning Tokens"
+                                                                    },
+                                                                    {
+                                                                        "name": "text_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Text Tokens"
+                                                                    },
+                                                                    {
+                                                                        "name": "audio_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Audio Tokens"
+                                                                    },
+                                                                    {
+                                                                        "name": "accepted_prediction_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Accepted Prediction Tokens"
+                                                                    },
+                                                                    {
+                                                                        "name": "rejected_prediction_tokens",
+                                                                        "type": "uinteger",
+                                                                        "label": "Rejected Prediction Tokens"
+                                                                    }
+                                                                ],
+                                                                "type": "collection",
+                                                                "label": "Completion Tokens Details"
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Usage"
+                                                    },
+                                                    {
+                                                        "name": "service_tier",
+                                                        "type": "text",
+                                                        "label": "Service Tier"
+                                                    },
+                                                    {
+                                                        "name": "system_fingerprint",
+                                                        "type": "text",
+                                                        "label": "System Fingerprint"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "id": 27,
+                                            "module": "telegram:SendReplyMessage",
+                                            "version": 1,
+                                            "parameters": {
+                                                "__IMTCONN__": 1394414
+                                            },
+                                            "mapper": {
+                                                "chatId": "{{1.channel_post.chat.id}}",
+                                                "text": "{{26.choices[].message.content}}",
+                                                "messageThreadId": "",
+                                                "parseMode": "",
+                                                "replyToMessageId": "",
+                                                "replyMarkupAssembleType": "reply_markup_enter",
+                                                "replyMarkup": ""
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2400,
+                                                    "y": 300
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "__IMTCONN__": {
+                                                            "label": "ParqueApp_bot_connection",
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "telegram"
+                                                            }
+                                                        }
+                                                    },
+                                                    "expect": {
+                                                        "parseMode": {
+                                                            "label": "Empty"
+                                                        },
+                                                        "disableNotification": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "replyMarkupAssembleType": {
+                                                            "label": "Enter the Reply Markup"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "__IMTCONN__",
+                                                        "type": "account:telegram",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "chatId",
+                                                        "type": "text",
+                                                        "label": "Chat ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "text",
+                                                        "type": "text",
+                                                        "label": "Text",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "messageThreadId",
+                                                        "type": "number",
+                                                        "label": "Message Thread ID"
+                                                    },
+                                                    {
+                                                        "name": "parseMode",
+                                                        "type": "select",
+                                                        "label": "Parse Mode",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "Markdown",
+                                                                "HTML"
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "disableNotification",
+                                                        "type": "boolean",
+                                                        "label": "Disable Notifications"
+                                                    },
+                                                    {
+                                                        "name": "disableWebPagePreview",
+                                                        "type": "boolean",
+                                                        "label": "Disable Link Previews"
+                                                    },
+                                                    {
+                                                        "name": "replyToMessageId",
+                                                        "type": "number",
+                                                        "label": "Original Message ID"
+                                                    },
+                                                    {
+                                                        "name": "replyMarkupAssembleType",
+                                                        "type": "select",
+                                                        "label": "Enter/Assemble the Reply Markup Field",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "reply_markup_enter",
+                                                                "reply_markup_assemble"
+                                                            ]
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "replyMarkup",
+                                                        "type": "text",
+                                                        "label": "Reply Markup"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 21,
+                            "module": "telegram:SendReplyMessage",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 1394414
+                            },
+                            "filter": {
+                                "name": "No relacionado",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{18.`el usuario esta preguntando por un parqueo`}}",
+                                            "o": "text:equal",
+                                            "b": "No"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "chatId": "{{1.channel_post.chat.id}}",
+                                "text": "Parece que tu consulta no está relacionada con los estacionamientos. Si necesitas información sobre los parqueos disponibles en la universidad, ¡haznos saber!",
+                                "messageThreadId": "",
+                                "parseMode": "",
+                                "replyToMessageId": "",
+                                "replyMarkupAssembleType": "reply_markup_enter",
+                                "replyMarkup": ""
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 600
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "label": "ParqueApp_bot_connection",
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            }
+                                        }
+                                    },
+                                    "expect": {
+                                        "parseMode": {
+                                            "label": "Empty"
+                                        },
+                                        "disableNotification": {
+                                            "mode": "chose"
+                                        },
+                                        "replyMarkupAssembleType": {
+                                            "label": "Enter the Reply Markup"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "chatId",
+                                        "type": "text",
+                                        "label": "Chat ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "text",
+                                        "type": "text",
+                                        "label": "Text",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "messageThreadId",
+                                        "type": "number",
+                                        "label": "Message Thread ID"
+                                    },
+                                    {
+                                        "name": "parseMode",
+                                        "type": "select",
+                                        "label": "Parse Mode",
+                                        "validate": {
+                                            "enum": [
+                                                "Markdown",
+                                                "HTML"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "disableNotification",
+                                        "type": "boolean",
+                                        "label": "Disable Notifications"
+                                    },
+                                    {
+                                        "name": "disableWebPagePreview",
+                                        "type": "boolean",
+                                        "label": "Disable Link Previews"
+                                    },
+                                    {
+                                        "name": "replyToMessageId",
+                                        "type": "number",
+                                        "label": "Original Message ID"
+                                    },
+                                    {
+                                        "name": "replyMarkupAssembleType",
+                                        "type": "select",
+                                        "label": "Enter/Assemble the Reply Markup Field",
+                                        "validate": {
+                                            "enum": [
+                                                "reply_markup_enter",
+                                                "reply_markup_assemble"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "replyMarkup",
+                                        "type": "text",
+                                        "label": "Reply Markup"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}
