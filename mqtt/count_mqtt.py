@@ -8,7 +8,7 @@ from paho.mqtt import client as mqtt_client
 from datetime import datetime
 import time
 
-broker = "test.mosquitto.org"
+broker = "broker.hivemq.com"
 port = 1883
 base_topic= "parqueoApp"
 
@@ -30,6 +30,7 @@ def Datos(parking_id,detections):
 
 	parqueos_ocupados = 0 
 	parqueos_disponibles = 0
+	nombre = "Ingenieria Mecanica"
 	
 	for _, row in detections.iterrows():
 		label = row['name']
@@ -42,7 +43,8 @@ def Datos(parking_id,detections):
 		"parqueo_id": parking_id,
 		"parqueos_ocupados": parqueos_ocupados,
 		"parqueos_disponibles": parqueos_disponibles,
-		"hora": fecha_hora
+		"hora": fecha_hora,
+		"nombre_parqueo": nombre
 	}
 
 def connect_mqtt(client_id):
@@ -83,6 +85,6 @@ def run_publisher(parking_ids):
 		t.join()
 
 if __name__ == '__main__':
-	parking_ids = [1]
+	parking_ids = [2]
 	run_publisher(parking_ids)
 
