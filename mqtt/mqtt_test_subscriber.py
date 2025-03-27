@@ -5,14 +5,15 @@ from threading import Thread
 from paho.mqtt import client as mqtt_client
 
 # Configuración
-BROKER = "test.mosquitto.org"
+BROKER = "broker.hivemq.com"
 PORT = 1883
 BASE_TOPIC = "parqueoApp"
 DB_CONFIG = {
-    "host": "192.168.100.194",
-    "user": "postgres",
+    "host": "aws-0-us-east-1.pooler.supabase.com",
+    "user": "postgres.achqpmaxjrrrbhwsykqj",
     "password": "postgres",
-    "dbname": "Proyecto_Grado"
+    "dbname": "postgres",
+    "port": 6543
 }
 
 # Conectar a PostgreSQL
@@ -30,30 +31,10 @@ def setup_database():
         with connection:
             with connection.cursor() as cursor:
                 # CREAR TABLA PARQUEO PRIMERO
-                cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS parqueo (
-                        parqueo_id SERIAL PRIMARY KEY,
-                        nombre VARCHAR(255) NOT NULL UNIQUE,
-                        descripcion TEXT
-                    );
-                """)
-                print(" Tabla 'parqueo' creada/verificada.")
 
                 # 🔄 REFRESCAR ESQUEMA PARA QUE PostgreSQL RECONOZCA 'parqueo_id'
                 cursor.execute("SELECT * FROM parqueo LIMIT 1;")
 
-                #  CREAR TABLA LECTURA EN LUGAR DE DISPONIBILIDAD_PARQUEO
-                cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS lectura (
-                        id SERIAL PRIMARY KEY,
-                        parqueo_id INTEGER NOT NULL,
-                        parqueos_ocupados INTEGER NOT NULL,
-                        parqueos_disponibles INTEGER NOT NULL,
-                        hora TIMESTAMP NOT NULL
-            
-                    );
-                """)
-                print(" Tabla 'lectura' creada/verificada.")
         connection.close()
 
 #  Conectar a MQTT
@@ -78,7 +59,8 @@ def on_message(client, userdata, msg):
             "parqueo_id": datos.get("parqueo_id"),
             "parqueos_ocupados": datos.get("parqueos_ocupados"),
             "parqueos_disponibles": datos.get("parqueos_disponibles"),
-            "hora": datos.get("hora")
+            "hora": datos.get("hora"),
+            "parqueo_nombre": datos.get("parqueo_nombre")
         }
 
         # Insertar datos en la base de datos
@@ -87,8 +69,8 @@ def on_message(client, userdata, msg):
             with connection:
                 with connection.cursor() as cursor:
                     insert_query = """
-                    INSERT INTO lectura (parqueo_id, parqueos_ocupados, parqueos_disponibles, hora)
-                    VALUES (%(parqueo_id)s, %(parqueos_ocupados)s, %(parqueos_disponibles)s, %(hora)s)
+                    INSERT INTO lectura (parqueo_id, parqueos_ocupados, parqueos_disponibles, hora, parqueo_nombre)
+                    VALUES (%(parqueo_id)s, %(parqueos_ocupados)s, %(parqueos_disponibles)s, %(hora)s, %(parqueo_nombre)s)
                     """
                     cursor.execute(insert_query, mapped_data)
                     print(" Datos insertados correctamente en la base de datos.")
