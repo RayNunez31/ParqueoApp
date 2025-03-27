@@ -11,7 +11,7 @@ BASE_TOPIC = "parqueoApp"
 DB_CONFIG = {
     "host": "aws-0-us-east-1.pooler.supabase.com",
     "user": "postgres.achqpmaxjrrrbhwsykqj",
-    "password": "postgres",
+    "password": "16A81\$]9CgW",
     "dbname": "postgres",
     "port": 6543
 }
